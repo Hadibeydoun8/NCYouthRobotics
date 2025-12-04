@@ -20,5 +20,7 @@ ssh $PI_HOST << EOF
     -e ROS_IP=192.168.12.164 \
     -e ROS_DOMAIN_ID=0 \
     hadibeydoun8/ncyouthrobotics:latest \
-    /bin/bash -c "source /build_space/ros2ws/install/setup.sh && ros2 run robot_drive_interface drive_node"
+    /bin/bash -c "source /build_space/ros2ws/install/setup.sh && \
+                  ros2 run robot_drive_interface drive_node & \
+                  ros2 run robot_drive_interface video_publisher"
 EOF

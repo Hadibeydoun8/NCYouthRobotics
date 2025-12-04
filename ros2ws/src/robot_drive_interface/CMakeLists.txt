@@ -51,6 +51,10 @@ target_link_libraries(video_publisher
 
 target_link_libraries(drive_node shared_defs)
 
+install(
+        DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME}/
+)
 
 install(TARGETS drive_node video_publisher
   DESTINATION lib/${PROJECT_NAME})
