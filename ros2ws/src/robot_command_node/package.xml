@@ -4,27 +4,32 @@
   <name>robot_command_node</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
+
   <maintainer email="hbeydoun@todo.todo">hbeydoun</maintainer>
   <license>TODO: License declaration</license>
+
+  <!-- CMake + Python support -->
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_python</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-
+  <!-- C++ and Python node dependencies -->
   <depend>robot_msgs</depend>
   <depend>rclcpp</depend>
 
+  <!-- Python runtime -->
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>python3</exec_depend>
+  <exec_depend>python3-setuptools</exec_depend>
+
   <exec_depend>std_msgs</exec_depend>
 
-
+  <!-- Tests -->
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
-
 
   <export>
     <build_type>ament_cmake</build_type>

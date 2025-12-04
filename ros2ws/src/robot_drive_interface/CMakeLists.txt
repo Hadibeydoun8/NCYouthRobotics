@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.8)
 project(robot_drive_interface)
 
 add_library(shared_defs INTERFACE)
-target_include_directories(shared_defs INTERFACE /home/hbeydoun/Documents/ros2robot/shared/include)
+target_include_directories(shared_defs INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared/include
+)
 
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
