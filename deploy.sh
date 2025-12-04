@@ -12,7 +12,7 @@ ssh $PI_HOST << EOF
   sudo docker stop $CONTAINER_NAME || true
   sudo docker rm $CONTAINER_NAME || true
 
-  echo "Running container detached with privileged access..."
+  echo "Running container detached with privileged access using multi-node launch..."
   sudo docker run -d \
     --name $CONTAINER_NAME \
     --network host \
@@ -21,6 +21,5 @@ ssh $PI_HOST << EOF
     -e ROS_DOMAIN_ID=0 \
     hadibeydoun8/ncyouthrobotics:latest \
     /bin/bash -c "source /build_space/ros2ws/install/setup.sh && \
-                  ros2 run robot_drive_interface drive_node & \
-                  ros2 run robot_drive_interface video_publisher"
+                  ros2 launch robot_drive_interface multi_node.launch.py"
 EOF
