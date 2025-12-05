@@ -21,11 +21,11 @@ public:
         }
 
         // FORCE resolution to 640x480
-        cap_.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-        cap_.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+        // cap_.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+        // cap_.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 
         // (Optional but recommended) Try to set FPS
-        cap_.set(cv::CAP_PROP_FPS, 30);
+        // cap_.set(cv::CAP_PROP_FPS, 2);
 
         RCLCPP_INFO(this->get_logger(),
                     "Camera opened at %.0fx%.0f @ %.0f FPS",
