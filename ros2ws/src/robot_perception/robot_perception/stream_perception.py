@@ -5,7 +5,9 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from ultralytics import YOLO
 from ament_index_python.packages import get_package_share_directory
+import cv2
 import os
+
 
 class ObjectDetection(Node):
 
@@ -18,7 +20,7 @@ class ObjectDetection(Node):
         self.class_pub = self.create_publisher(String, 'detected_classes', 10)
 
         # Subscriber to raw camera images
-        self.subscriber_ = self.create_subscription(Image, "camera/image_raw", self.image_callback, 10)
+        self.subscriber_ = self.create_subscription(Image, "robot/D415/color/image_raw", self.image_callback, 10)
 
         # YOLO model
         pkg_share = get_package_share_directory('robot_perception')
@@ -38,6 +40,9 @@ class ObjectDetection(Node):
             self.get_logger().error(f"Could not convert image: {e}")
             return
 
+        # FIX: Rotate camera feed 180 degrees (invert image)
+        cv_image = cv2.rotate(cv_image, cv2.ROTATE_180)
+
         # Run YOLO detection
         results = self.model(cv_image)
 
@@ -47,18 +52,19 @@ class ObjectDetection(Node):
         # Publish annotated image
         try:
             ros_annotated = self.bridge.cv2_to_imgmsg(annotated_image, encoding='bgr8')
-            ros_annotated.header = msg.header  # preserve timestamp/frame_id
+            ros_annotated.header = msg.header
             self.annotated_pub.publish(ros_annotated)
         except Exception as e:
             self.get_logger().error(f"Could not publish annotated image: {e}")
 
-        # Publish detected classes as String
+        # Publish detected classes
         detected_classes = [self.model.names[int(cls)] for cls in results[0].boxes.cls] if results[0].boxes is not None else []
         if detected_classes:
             msg_out = String()
             msg_out.data = ','.join(detected_classes)
             self.class_pub.publish(msg_out)
             self.get_logger().info(f"Detected: {msg_out.data}")
+
 
 def main(args=None):
     rclpy.init(args=args)
