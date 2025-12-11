@@ -17,32 +17,23 @@ def generate_launch_description():
             package='realsense2_camera',
             executable='realsense2_camera_node',
             name='D415',
-            namespace='robot1',
+            namespace='robot',
             parameters=[
-                # Lower RGB resolution + FPS for Pi bandwidth limits
-                {'rgb_camera.profile': '640x480x15'},
-                {'enable_color': True},
+                {'color_profile': '640x480x15'},
+                {'depth_profile': '640x480x15'},
 
-                # Lower depth workload
-                {'depth_module.profile': '640x480x15'},
-                {'enable_depth': True},
-
-                # Disable heavy filters
-                {'enable_pointcloud': False},
-                {'enable_sync': False},
-                {'enable_accel': False},
-                {'enable_gyro': False},
-
-                # Reduce CPU load
-                {'align_depth.enable': False},
-
-                # Force image compression for network transport
                 {'enable_infra1': False},
                 {'enable_infra2': False},
-            ],
-            remappings=[
-                ('/color/image_raw', '/robot1/color/image_raw/compressed'),
-                ('/depth/image_rect_raw', '/robot1/depth/image_rect_raw/compressed'),
+
+                {'enable_color': True},
+                {'enable_depth': True},
+
+                {'enable_pointcloud': False},
+                {'enable_sync': False},
+                {'align_depth.enable': False},
+
+                {'color0.topic_publisher.queue_size': 2},
+                {'depth0.topic_publisher.queue_size': 2},
             ]
         )
     ])
