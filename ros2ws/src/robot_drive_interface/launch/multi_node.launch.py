@@ -47,7 +47,7 @@ def generate_launch_description():
         executable='drive_node',
         name='drive_interface',
         parameters=[
-            {'serial_port': '/dev/ttyUSB0'}   # Default, overridable in launch
+            {'serial_port': '/dev/ttyUSB1'}   # Default, overridable in launch
         ]
     )
 
