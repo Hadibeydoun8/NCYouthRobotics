@@ -17,21 +17,27 @@ class RobotDriveInterface final : public rclcpp::Node
 {
 public:
   RobotDriveInterface()
-  : Node("minimal_subscriber")
+  : Node("robot_drive_interface")
   {
-    init_interface();
+    // Declare parameter with default value
+    this->declare_parameter<std::string>("serial_port", "/dev/ttyUSB0");
+    std::string port = this->get_parameter("serial_port").as_string();
+
+    init_interface(port);
 
     subscription_ = this->create_subscription<robot_msgs::msg::MotorControl>(
       "command_node", 10,
-      std::bind(&RobotDriveInterface::topic_callback, this, _1)); // NOLINT(*-avoid-bind)
+      std::bind(&RobotDriveInterface::topic_callback, this, _1));
   }
 
 private:
 
-  void init_interface() {
-    tty_fd_ = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY);
+  void init_interface(const std::string& device)
+  {
+    tty_fd_ = open(device.c_str(), O_RDWR | O_NOCTTY);
+
     if (tty_fd_ < 0) {
-      throw std::runtime_error("Failed to open serial port");
+      throw std::runtime_error("Failed to open serial port: " + device);
     }
 
     termios tio{};
@@ -47,19 +53,20 @@ private:
 
     tcflush(tty_fd_, TCIFLUSH);
     tcsetattr(tty_fd_, TCSANOW, &tio);
+
+    RCLCPP_INFO(this->get_logger(), "Opened serial port: %s", device.c_str());
   }
 
-  void topic_callback(const robot_msgs::msg::MotorControl & msg) const {
-    // Log message
-    RCLCPP_INFO(this->get_logger(), "I heard: '%d' and '%d'",
+  void topic_callback(const robot_msgs::msg::MotorControl & msg) const
+  {
+    RCLCPP_INFO(this->get_logger(),
+                "Received motor command: left=%d right=%d",
                 msg.left_motor, msg.right_motor);
 
-    // Build packet
     shared_defs::MotorCommandUnion u{};
     u.motor_command.left_motor = msg.left_motor;
     u.motor_command.right_motor = msg.right_motor;
 
-    // Write sync byte + payload
     write(tty_fd_, &shared_defs::sync_byte, 1);
     write(tty_fd_, u.raw_data, sizeof(u.raw_data));
   }
@@ -68,7 +75,7 @@ private:
   rclcpp::Subscription<robot_msgs::msg::MotorControl>::SharedPtr subscription_;
 };
 
-int main(const int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<RobotDriveInterface>());

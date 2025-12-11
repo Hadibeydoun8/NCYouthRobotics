@@ -21,6 +21,7 @@ def generate_launch_description():
         launch_arguments={'robot_model': 'rx200'}.items()
     )
 
+    # RealSense camera node
     realsense = Node(
         package='realsense2_camera',
         executable='realsense2_camera_node',
@@ -40,4 +41,18 @@ def generate_launch_description():
         ]
     )
 
-    return LaunchDescription([interbotix, realsense])
+    # Your C++ drive node
+    drive_interface = Node(
+        package='robot_drive_interface',
+        executable='drive_node',
+        name='drive_interface',
+        parameters=[
+            {'serial_port': '/dev/ttyUSB0'}   # Default, overridable in launch
+        ]
+    )
+
+    return LaunchDescription([
+        interbotix,
+        realsense,
+        drive_interface,
+    ])
