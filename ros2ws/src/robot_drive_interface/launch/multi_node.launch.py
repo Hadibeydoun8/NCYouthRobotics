@@ -19,21 +19,19 @@ def generate_launch_description():
             name='D415',
             namespace='robot',
             parameters=[
-                {'color_profile': '640x480x15'},
-                {'depth_profile': '640x480x15'},
-
+                {'enable_color': True},
+                {'enable_depth': False},
                 {'enable_infra1': False},
                 {'enable_infra2': False},
-
-                {'enable_color': True},
-                {'enable_depth': True},
-
                 {'enable_pointcloud': False},
                 {'enable_sync': False},
                 {'align_depth.enable': False},
 
+                # Correct RealSense ROS2 parameter names
+                {'rgb_camera.profile': '640x480x6'},
+
+                # Optional queue tuning
                 {'color0.topic_publisher.queue_size': 2},
-                {'depth0.topic_publisher.queue_size': 2},
             ]
         )
     ])
