@@ -566,6 +566,8 @@ static int16_t apply_dead_zone(int16_t value, int16_t deadzone=7000) {
 
 \textbf{Why needed?} Without dead zone, small stick drift would cause unintended robot movement. The final multiplication by -1 inverts the Y-axis because game controllers typically report upward stick movement as negative values, but robots expect positive values for forward motion.
 
+\textbf{Note}: This function is used for both left and right sticks. In a more generic implementation, the Y-axis inversion could be handled outside the dead zone function to make it reusable for X-axis processing as well.
+
 \subsubsection{Control Loop}
 
 \begin{lstlisting}[style=cppstyle, caption=Input Loop (simplified)]
@@ -594,6 +596,8 @@ void input_loop() {
 \end{lstlisting}
 
 \textbf{Design Decision}: Separate thread for input allows controller processing without blocking ROS2 callbacks. Tank-style control (left stick controls left motor, right stick controls right motor) provides intuitive differential drive control.
+
+\textbf{Performance Note}: The rate object is created inside the loop. For optimal performance in production code, consider creating it once outside the loop. However, this implementation is sufficient for a 5 Hz control rate.
 
 \subsection{robot\_drive\_interface Package}
 
@@ -831,6 +835,8 @@ void loop() {
 \end{lstlisting}
 
 \textbf{Safety Note}: If serial communication stops, the Arduino will continue executing the last command. Consider adding a timeout mechanism for production systems.
+
+\textbf{Performance Note}: The \texttt{delay(100)} blocks the entire Arduino loop. For applications requiring multiple concurrent tasks (e.g., sensor reading, LED indicators), consider using \texttt{millis()} for non-blocking timing. However, for this simple motor control application, the blocking delay is adequate.
 
 %=============================================================================
 \section{Launch Scripts}
