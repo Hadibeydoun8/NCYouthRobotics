@@ -71,7 +71,7 @@ See the full documentation for detailed information about each package.
 
 ## License
 
-[Specify your license here]
+This project is provided for educational purposes. Please consult with NC Youth Robotics for licensing information.
 
 ## Contact
 

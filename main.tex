@@ -558,11 +558,13 @@ static int16_t apply_dead_zone(int16_t value, int16_t deadzone=7000) {
     float scaled = static_cast<float>(magnitude - deadzone) / 
                    static_cast<float>(max_val - deadzone);
     
+    // Multiply by -1 to invert Y-axis: controller reports up as negative,
+    // but robot expects positive for forward movement
     return sign * static_cast<int16_t>(scaled * max_val) * -1;
 }
 \end{lstlisting}
 
-\textbf{Why needed?} Without dead zone, small stick drift would cause unintended robot movement.
+\textbf{Why needed?} Without dead zone, small stick drift would cause unintended robot movement. The final multiplication by -1 inverts the Y-axis because game controllers typically report upward stick movement as negative values, but robots expect positive values for forward motion.
 
 \subsubsection{Control Loop}
 
@@ -1221,11 +1223,11 @@ ros2 node info /drive_interface
 When working with Raspberry Pi:
 
 \begin{lstlisting}[style=bashstyle]
-# Set ROS_DOMAIN_ID on both machines
+# Set ROS_DOMAIN_ID on both machines (must be the same)
 export ROS_DOMAIN_ID=0
 
-# On local machine, set ROS_IP
-export ROS_DOMAIN_ID=0
+# ROS2 will automatically discover nodes on the same network
+# No need to set ROS_IP (ROS2 uses DDS discovery)
 
 # Now you can view topics from Pi on local machine
 ros2 topic list
