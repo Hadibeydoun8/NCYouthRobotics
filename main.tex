@@ -1,0 +1,1374 @@
+\documentclass[11pt,a4paper]{article}
+
+% Package imports
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{titlesec}
+
+% Configure hyperlinks
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={ROS2 Robotics Project Documentation},
+    pdfpagemode=FullScreen,
+}
+
+% Code listing configuration
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{cppstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C++
+}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    language=Python
+}
+
+\lstdefinestyle{bashstyle}{
+    backgroundcolor=\color{backcolour},   
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny\color{codegray},
+}
+
+\lstset{style=cppstyle}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ROS2 Robotics Project}
+\lhead{NC Youth Robotics}
+\rfoot{Page \thepage}
+
+% Title information
+\title{\textbf{ROS2 Robotics Project\\Student Documentation}}
+\author{NC Youth Robotics}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%=============================================================================
+\section{Introduction}
+%=============================================================================
+
+Welcome to the ROS2 Robotics Project! This documentation provides a comprehensive guide for students to set up, understand, and work with a robotics system built on ROS2 (Robot Operating System 2). 
+
+\subsection{Project Overview}
+
+This project implements a complete robotics platform that includes:
+\begin{itemize}
+    \item \textbf{Robot Control}: Gamepad-based control interface using PS4/DualShock controller
+    \item \textbf{Motor Drive System}: Serial communication with Arduino-based motor controller
+    \item \textbf{Computer Vision}: Camera integration and YOLO-based object detection
+    \item \textbf{Robotic Arm}: Integration with Interbotix RX200 robotic manipulator
+    \item \textbf{Distributed Computing}: Support for both local development and Raspberry Pi deployment
+\end{itemize}
+
+\subsection{System Architecture}
+
+The system consists of three main components:
+
+\begin{enumerate}
+    \item \textbf{ROS2 Workspace} (\texttt{ros2ws/}): Contains all ROS2 packages including custom robot packages and Interbotix manipulator packages
+    \item \textbf{Arduino Firmware} (\texttt{Arduino/}): Microcontroller code for motor control using PlatformIO
+    \item \textbf{Shared Definitions} (\texttt{shared/}): Common protocol definitions shared between ROS2 and Arduino
+\end{enumerate}
+
+%=============================================================================
+\section{Installation and Setup}
+%=============================================================================
+
+\subsection{ROS2 Humble Installation on Local Machine (Ubuntu 22.04)}
+
+ROS2 Humble is the recommended LTS (Long Term Support) release for this project. Follow these steps to install ROS2 Humble on your Ubuntu 22.04 system.
+
+\subsubsection{Set up Sources}
+
+\begin{lstlisting}[style=bashstyle, caption=Add ROS2 Repository]
+# Ensure UTF-8 locale
+sudo apt update && sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+# Add ROS2 apt repository
+sudo apt install software-properties-common
+sudo add-apt-repository universe
+
+# Add ROS2 GPG key
+sudo apt update && sudo apt install curl -y
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+# Add repository to sources list
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+\end{lstlisting}
+
+\subsubsection{Install ROS2 Packages}
+
+\begin{lstlisting}[style=bashstyle, caption=Install ROS2 Humble Desktop]
+# Update package index
+sudo apt update
+sudo apt upgrade
+
+# Install ROS2 Humble Desktop (includes RViz, demos, tutorials)
+sudo apt install ros-humble-desktop
+
+# Install development tools
+sudo apt install ros-dev-tools
+\end{lstlisting}
+
+\subsubsection{Environment Setup}
+
+Add ROS2 to your shell startup script:
+
+\begin{lstlisting}[style=bashstyle, caption=Configure ROS2 Environment]
+# Add to ~/.bashrc
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+
+# Verify installation
+ros2 --version
+\end{lstlisting}
+
+\subsubsection{Install Project Dependencies}
+
+\begin{lstlisting}[style=bashstyle, caption=Install Required Dependencies]
+# Install SDL2 for gamepad support
+sudo apt install libsdl2-dev
+
+# Install OpenCV and cv_bridge
+sudo apt install ros-humble-cv-bridge ros-humble-vision-opencv libopencv-dev
+
+# Install RealSense camera drivers
+sudo apt install ros-humble-realsense2-camera
+
+# Install Python dependencies
+pip3 install ultralytics opencv-python
+\end{lstlisting}
+
+\textbf{Reference}: Full ROS2 installation guide: \url{https://docs.ros.org/en/humble/Installation.html}
+
+\subsection{ROS2 Humble Installation on Raspberry Pi}
+
+The Raspberry Pi serves as the onboard computer for the robot, running the same ROS2 nodes in a distributed manner.
+
+\subsubsection{Install Ubuntu Server 22.04}
+
+\begin{enumerate}
+    \item Download Ubuntu Server 22.04 64-bit for Raspberry Pi from: \url{https://ubuntu.com/download/raspberry-pi}
+    \item Use Raspberry Pi Imager or \texttt{dd} to flash the image to an SD card
+    \item Boot the Raspberry Pi and complete initial setup
+\end{enumerate}
+
+\subsubsection{Initial Raspberry Pi Configuration}
+
+\begin{lstlisting}[style=bashstyle, caption=Raspberry Pi Initial Setup]
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Set hostname (optional but recommended)
+sudo hostnamectl set-hostname robot-pi
+
+# Install network tools
+sudo apt install net-tools openssh-server
+
+# Enable SSH for remote access
+sudo systemctl enable ssh
+sudo systemctl start ssh
+\end{lstlisting}
+
+\subsubsection{Install ROS2 on Raspberry Pi}
+
+Follow the same steps as for the local machine (Section 2.1), including all dependencies. The Raspberry Pi 4 with 4GB+ RAM is recommended for optimal performance.
+
+\subsection{Raspberry Pi Setup with Ubuntu}
+
+\subsubsection{Configure Network}
+
+For reliable robot operation, set up a static IP address:
+
+\begin{lstlisting}[style=bashstyle, caption=Configure Static IP]
+# Edit netplan configuration
+sudo nano /etc/netplan/50-cloud-init.yaml
+
+# Add static IP configuration:
+# network:
+#   ethernets:
+#     eth0:
+#       dhcp4: no
+#       addresses: [192.168.12.164/24]
+#       gateway4: 192.168.12.1
+#       nameservers:
+#         addresses: [8.8.8.8, 8.8.4.4]
+#   version: 2
+
+# Apply configuration
+sudo netplan apply
+\end{lstlisting}
+
+\subsubsection{Install Docker (Optional but Recommended)}
+
+Docker simplifies deployment and ensures consistent environments:
+
+\begin{lstlisting}[style=bashstyle, caption=Install Docker on Raspberry Pi]
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Add user to docker group
+sudo usermod -aG docker $USER
+
+# Log out and back in for changes to take effect
+\end{lstlisting}
+
+\textbf{Note}: The project includes a \texttt{Dockerfile} and \texttt{deploy.sh} script for containerized deployment.
+
+\subsection{PlatformIO Installation and Usage}
+
+PlatformIO is a professional collaborative platform for embedded development. We use it to program the Arduino that controls the motors.
+
+\subsubsection{Install PlatformIO Core}
+
+\begin{lstlisting}[style=bashstyle, caption=Install PlatformIO]
+# Install PlatformIO using pip
+pip3 install platformio
+
+# Verify installation
+pio --version
+\end{lstlisting}
+
+\subsubsection{Install PlatformIO IDE (Optional)}
+
+PlatformIO can be used as a VSCode extension:
+
+\begin{enumerate}
+    \item Install Visual Studio Code from: \url{https://code.visualstudio.com/}
+    \item Open VSCode and go to Extensions (Ctrl+Shift+X)
+    \item Search for "PlatformIO IDE" and install
+\end{enumerate}
+
+\subsubsection{Using PlatformIO with This Project}
+
+\begin{lstlisting}[style=bashstyle, caption=PlatformIO Commands]
+# Navigate to Arduino directory
+cd Arduino/
+
+# Build the firmware
+pio run
+
+# Upload to Arduino (with Arduino connected via USB)
+pio run --target upload
+
+# Open serial monitor to view debug output
+pio device monitor --baud 115200
+\end{lstlisting}
+
+\textbf{Configuration}: The \texttt{platformio.ini} file defines the build configuration:
+
+\begin{lstlisting}[caption=platformio.ini]
+[env:uno]
+platform = atmelavr
+board = uno
+framework = arduino
+monitor_speed = 115200
+\end{lstlisting}
+
+\textbf{Reference}: PlatformIO documentation: \url{https://docs.platformio.org/}
+
+%=============================================================================
+\section{Technical Background}
+%=============================================================================
+
+\subsection{Serial Communication}
+
+Serial communication is a method of transmitting data one bit at a time over a communication channel. In this project, we use serial communication to send motor commands from the Raspberry Pi (running ROS2) to the Arduino.
+
+\subsubsection{Why Serial Communication?}
+
+\begin{itemize}
+    \item \textbf{Hardware Separation}: ROS2 runs on Linux (Raspberry Pi), which isn't real-time. Arduino provides real-time motor control
+    \item \textbf{Simplicity}: Serial (UART) is simple, reliable, and well-supported
+    \item \textbf{Isolation}: Separates high-level planning (ROS2) from low-level control (Arduino)
+    \item \textbf{Robustness}: If ROS2 crashes, Arduino can safely stop motors
+\end{itemize}
+
+\subsubsection{Serial Protocol}
+
+Our custom protocol ensures reliable communication:
+
+\begin{enumerate}
+    \item \textbf{Sync Byte} (\texttt{0xAA}): Marks the start of a message
+    \item \textbf{Data Packet}: 8 bytes containing two 32-bit signed integers (left and right motor speeds)
+    \item \textbf{Baud Rate}: 115200 bits per second
+\end{enumerate}
+
+\begin{tcolorbox}[title=Protocol Visualization]
+\texttt{[SYNC (1 byte)][left\_motor (4 bytes)][right\_motor (4 bytes)]}
+\end{tcolorbox}
+
+\subsection{Project Dependencies}
+
+Understanding the dependencies helps you troubleshoot and extend the project.
+
+\subsubsection{ROS2 Dependencies}
+
+\begin{itemize}
+    \item \textbf{rclcpp}: ROS2 C++ client library for creating nodes
+    \item \textbf{rclpy}: ROS2 Python client library
+    \item \textbf{cv\_bridge}: Converts between ROS Image messages and OpenCV images
+    \item \textbf{sensor\_msgs}: Standard ROS2 messages for sensor data (Image, CameraInfo)
+    \item \textbf{std\_msgs}: Basic ROS2 message types (String, Int32, etc.)
+    \item \textbf{SDL2}: Simple DirectMedia Layer for gamepad input
+    \item \textbf{OpenCV}: Computer vision library for image processing
+    \item \textbf{Ultralytics YOLO}: Modern object detection neural network
+\end{itemize}
+
+\subsubsection{Arduino Dependencies}
+
+\begin{itemize}
+    \item \textbf{Arduino Framework}: Core Arduino libraries
+    \item \textbf{PlatformIO}: Build system and library manager
+\end{itemize}
+
+\subsection{Shared Folder Structure}
+
+The \texttt{shared/} directory contains definitions used by both ROS2 (C++) and Arduino (C++) code. This ensures consistency in the communication protocol.
+
+\subsubsection{Purpose}
+
+\begin{itemize}
+    \item \textbf{Single Source of Truth}: Define protocol once, use everywhere
+    \item \textbf{Type Safety}: Ensures both sides interpret data identically
+    \item \textbf{Maintainability}: Changes to protocol only require editing one file
+\end{itemize}
+
+\subsubsection{Contents}
+
+\begin{lstlisting}[style=cppstyle, caption=shared/include/shared\_defs/RobotIO.h]
+#pragma once
+
+#define SYNC_BYTE 0xAA
+
+namespace shared_defs {
+    inline char sync_byte = SYNC_BYTE;
+
+    struct __attribute__((packed)) MotorCommand {
+        int32_t left_motor;   // Left motor speed (-255 to 255)
+        int32_t right_motor;  // Right motor speed (-255 to 255)
+    };
+
+    union MotorCommandUnion {
+        MotorCommand motor_command;
+        uint8_t raw_data[sizeof(MotorCommand)];
+    };
+
+    static_assert(sizeof(MotorCommand) == 8);
+}
+\end{lstlisting}
+
+\textbf{Key Points}:
+\begin{itemize}
+    \item \texttt{\_\_attribute\_\_((packed))}: Ensures no padding between struct members
+    \item \texttt{union}: Allows treating the same memory as either struct or byte array
+    \item \texttt{static\_assert}: Compile-time verification of size
+\end{itemize}
+
+%=============================================================================
+\section{Project Architecture}
+%=============================================================================
+
+\subsection{ROS2 Workspace Structure}
+
+The project uses a standard ROS2 workspace layout:
+
+\begin{verbatim}
+ros2ws/
+├── src/                           # Source packages
+│   ├── robot_command_node/        # Gamepad controller
+│   ├── robot_drive_interface/     # Serial & camera interface
+│   ├── robot_msgs/                # Custom message definitions
+│   ├── robot_perception/          # Object detection
+│   ├── interbotix_*/              # Robotic arm packages (3rd party)
+│   └── moveit_visual_tools/       # Visualization tools
+├── build/                         # Build artifacts (auto-generated)
+├── install/                       # Installed packages (auto-generated)
+└── log/                           # Build logs (auto-generated)
+\end{verbatim}
+
+\subsection{Robot Packages Overview}
+
+The \texttt{robot\_*} packages are the core custom packages you'll work with:
+
+\begin{itemize}
+    \item \textbf{robot\_msgs}: Custom ROS2 message definitions
+    \item \textbf{robot\_command\_node}: Reads gamepad input and publishes motor commands
+    \item \textbf{robot\_drive\_interface}: Sends motor commands via serial and publishes camera feed
+    \item \textbf{robot\_perception}: Processes camera feed for object detection
+\end{itemize}
+
+\subsection{Interbotix Packages}
+
+The Interbotix packages provide support for the RX200 robotic manipulator. These are third-party packages that you generally don't need to modify. Key packages:
+
+\begin{itemize}
+    \item \textbf{interbotix\_xsarm\_control}: Low-level control of the robotic arm
+    \item \textbf{interbotix\_xsarm\_descriptions}: URDF models and meshes
+    \item \textbf{interbotix\_ros\_core}: Core drivers for Dynamixel servos
+\end{itemize}
+
+\textbf{Usage}: The \texttt{multi\_node.launch.py} automatically launches the necessary Interbotix nodes. You typically interact with the arm through its Python API or MoveIt interface.
+
+%=============================================================================
+\section{Code Documentation}
+%=============================================================================
+
+\subsection{robot\_msgs Package}
+
+\textbf{Purpose}: Defines custom ROS2 messages used for inter-node communication.
+
+\subsubsection{MotorControl.msg}
+
+\begin{lstlisting}[caption=MotorControl.msg]
+int32 left_motor
+int32 right_motor
+\end{lstlisting}
+
+\textbf{Description}: Carries motor speed commands for differential drive robot.
+\begin{itemize}
+    \item \texttt{left\_motor}: Speed for left motor (-255 to 255, negative = reverse)
+    \item \texttt{right\_motor}: Speed for right motor (-255 to 255)
+\end{itemize}
+
+\subsubsection{ObjectDetection.msg}
+
+\begin{lstlisting}[caption=ObjectDetection.msg]
+bool object_detected
+\end{lstlisting}
+
+\textbf{Description}: Simple flag indicating if an object was detected. Can be extended to include object class, confidence, bounding box, etc.
+
+\subsubsection{Building Messages}
+
+ROS2 automatically generates C++ and Python code from \texttt{.msg} files:
+
+\begin{lstlisting}[style=bashstyle]
+# Messages are built as part of normal colcon build
+cd ros2ws/
+colcon build --packages-select robot_msgs
+\end{lstlisting}
+
+\subsection{robot\_command\_node Package}
+
+\textbf{Purpose}: Interfaces with a PS4 DualShock controller to generate motor commands.
+
+\subsubsection{Architecture}
+
+\begin{itemize}
+    \item \textbf{Language}: C++
+    \item \textbf{Node Name}: \texttt{command\_node}
+    \item \textbf{Dependencies}: SDL2 (for gamepad), rclcpp, robot\_msgs
+    \item \textbf{Publishes}: \texttt{/command\_node} topic with \texttt{MotorControl} messages
+\end{itemize}
+
+\subsubsection{Key Components}
+
+\begin{lstlisting}[style=cppstyle, caption=DS4 State Structure (command\_node.cpp)]
+struct DS4State {
+    // Buttons
+    bool square, triangle, circle, cross;
+    bool l1, r1, l2, r2;
+    bool share, options, l3, r3, ps, touchpad;
+    
+    // D-Pad
+    bool dpad_up, dpad_down, dpad_left, dpad_right;
+    
+    // Axes (analog sticks and triggers)
+    int16_t left_x, left_y;      // -32768 to 32767
+    int16_t right_x, right_y;
+    int16_t l2_analog, r2_analog;
+};
+\end{lstlisting}
+
+\textbf{Why this structure?} It provides a clean interface to all controller inputs, making the code more readable than raw SDL calls.
+
+\subsubsection{Dead Zone Implementation}
+
+Analog sticks naturally drift due to mechanical imperfections. The dead zone filters small inputs:
+
+\begin{lstlisting}[style=cppstyle, caption=Dead Zone Function]
+static int16_t apply_dead_zone(int16_t value, int16_t deadzone=7000) {
+    if (std::abs(value) < deadzone) {
+        return 0;  // Ignore small inputs
+    }
+    
+    // Scale remaining range to full output
+    constexpr int16_t max_val = 32767;
+    const int16_t sign = (value > 0) ? 1 : -1;
+    const int16_t magnitude = std::abs(value);
+    
+    float scaled = static_cast<float>(magnitude - deadzone) / 
+                   static_cast<float>(max_val - deadzone);
+    
+    // Multiply by -1 to invert Y-axis: controller reports up as negative,
+    // but robot expects positive for forward movement
+    return sign * static_cast<int16_t>(scaled * max_val) * -1;
+}
+\end{lstlisting}
+
+\textbf{Why needed?} Without dead zone, small stick drift would cause unintended robot movement. The final multiplication by -1 inverts the Y-axis because game controllers typically report upward stick movement as negative values, but robots expect positive values for forward motion.
+
+\textbf{Note}: This function is used for both left and right sticks. In a more generic implementation, the Y-axis inversion could be handled outside the dead zone function to make it reusable for X-axis processing as well.
+
+\subsubsection{Control Loop}
+
+\begin{lstlisting}[style=cppstyle, caption=Input Loop (simplified)]
+void input_loop() {
+    while (rclcpp::ok()) {
+        rclcpp::Rate rate(5);  // 5 Hz update rate
+        auto message = robot_msgs::msg::MotorControl();
+        
+        // Read controller state
+        dual_shock4(controller_, &buttons);
+        
+        // Apply dead zone to Y axes (forward/backward)
+        const int16_t ly = apply_dead_zone(buttons.left_y, 7000);
+        const int16_t ry = apply_dead_zone(buttons.right_y, 7000);
+        
+        // Scale to motor range (-255 to 255)
+        message.left_motor  = ly / 128;
+        message.right_motor = ry / 128;
+        
+        // Publish command
+        publisher_->publish(message);
+        
+        rate.sleep();
+    }
+}
+\end{lstlisting}
+
+\textbf{Design Decision}: Separate thread for input allows controller processing without blocking ROS2 callbacks. Tank-style control (left stick controls left motor, right stick controls right motor) provides intuitive differential drive control.
+
+\textbf{Performance Note}: The rate object is created inside the loop. For optimal performance in production code, consider creating it once outside the loop. However, this implementation is sufficient for a 5 Hz control rate.
+
+\subsection{robot\_drive\_interface Package}
+
+\textbf{Purpose}: Bridge between ROS2 and Arduino. Receives motor commands and sends them via serial. Also publishes camera feed.
+
+\subsubsection{drive\_node}
+
+\textbf{Language}: C++
+
+\paragraph{Initialization}
+
+\begin{lstlisting}[style=cppstyle, caption=Serial Port Initialization (drive\_node.cpp)]
+void init_interface(const std::string& device) {
+    // Open serial port
+    tty_fd_ = open(device.c_str(), O_RDWR | O_NOCTTY);
+    if (tty_fd_ < 0) {
+        throw std::runtime_error("Failed to open serial port");
+    }
+    
+    // Configure termios for raw serial communication
+    termios tio{};
+    tcgetattr(tty_fd_, &tio);
+    
+    tio.c_cflag = CS8 | CREAD | CLOCAL;  // 8 data bits, enable RX, ignore modem control
+    tio.c_iflag = IGNPAR;                 // Ignore parity errors
+    tio.c_oflag = 0;                      // Raw output
+    tio.c_lflag = 0;                      // Non-canonical mode
+    
+    // Set baud rate to 115200
+    cfsetispeed(&tio, B115200);
+    cfsetospeed(&tio, B115200);
+    
+    // Apply settings
+    tcflush(tty_fd_, TCIFLUSH);
+    tcsetattr(tty_fd_, TCSANOW, &tio);
+}
+\end{lstlisting}
+
+\textbf{Why POSIX termios?} Provides low-level control over serial communication, necessary for reliable communication with microcontrollers.
+
+\paragraph{Sending Commands}
+
+\begin{lstlisting}[style=cppstyle, caption=Topic Callback]
+void topic_callback(const robot_msgs::msg::MotorControl & msg) const {
+    // Convert ROS message to shared protocol format
+    shared_defs::MotorCommandUnion u{};
+    u.motor_command.left_motor = msg.left_motor;
+    u.motor_command.right_motor = msg.right_motor;
+    
+    // Send sync byte followed by data
+    write(tty_fd_, &shared_defs::sync_byte, 1);
+    write(tty_fd_, u.raw_data, sizeof(u.raw_data));
+}
+\end{lstlisting}
+
+\textbf{Protocol Flow}:
+\begin{enumerate}
+    \item Receive ROS2 message
+    \item Pack data into union (same format as Arduino expects)
+    \item Send sync byte (\texttt{0xAA})
+    \item Send 8 bytes of motor data
+\end{enumerate}
+
+\subsubsection{video\_publisher}
+
+\textbf{Purpose}: Captures video from camera and publishes as ROS2 Image messages.
+
+\begin{lstlisting}[style=cppstyle, caption=Video Publisher (video\_publisher.cpp)]
+class VideoPublisher : public rclcpp::Node {
+    cv::VideoCapture cap_;
+    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
+    
+public:
+    VideoPublisher() : Node("video_publisher") {
+        pub_ = this->create_publisher<sensor_msgs::msg::Image>(
+            "camera/image_raw", 10);
+        
+        // Open camera 0 (USB or built-in)
+        cap_.open(0);
+        
+        // Timer callback at ~30 Hz
+        timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(30),
+            std::bind(&VideoPublisher::timer_callback, this));
+    }
+    
+    void timer_callback() {
+        cv::Mat frame;
+        cap_ >> frame;
+        
+        if (frame.empty()) return;
+        
+        // Convert OpenCV Mat to ROS2 Image message
+        auto msg = cv_bridge::CvImage(
+            std_msgs::msg::Header(),
+            "bgr8",
+            frame
+        ).toImageMsg();
+        
+        pub_->publish(*msg);
+    }
+};
+\end{lstlisting}
+
+\textbf{Why separate node?} Separating video publishing from motor control provides modularity. If camera fails, motor control continues.
+
+\subsection{robot\_perception Package}
+
+\textbf{Purpose}: Performs object detection using YOLO neural network on camera feed.
+
+\textbf{Language}: Python
+
+\subsubsection{Architecture}
+
+\begin{lstlisting}[style=pythonstyle, caption=Object Detection Node (stream\_perception.py)]
+class ObjectDetection(Node):
+    def __init__(self):
+        super().__init__('object_detection')
+        
+        # Publisher for annotated images
+        self.annotated_pub = self.create_publisher(
+            Image, 'camera/image_annotated', 10)
+        
+        # Publisher for detected class names
+        self.class_pub = self.create_publisher(
+            String, 'detected_classes', 10)
+        
+        # Subscribe to camera feed
+        self.subscriber_ = self.create_subscription(
+            Image, "robot/D415/color/image_raw", 
+            self.image_callback, 10)
+        
+        # Load YOLO model
+        pkg_share = get_package_share_directory('robot_perception')
+        model_path = os.path.join(pkg_share, 'models', 'best.pt')
+        self.model = YOLO(model_path)
+\end{lstlisting}
+
+\subsubsection{Image Processing Pipeline}
+
+\begin{lstlisting}[style=pythonstyle, caption=Image Callback]
+def image_callback(self, msg: Image):
+    # Convert ROS Image to OpenCV format
+    cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+    
+    # Rotate 180 degrees (camera mounted upside down)
+    cv_image = cv2.rotate(cv_image, cv2.ROTATE_180)
+    
+    # Run YOLO detection
+    results = self.model(cv_image)
+    
+    # Draw bounding boxes and labels
+    annotated_image = results[0].plot()
+    
+    # Publish annotated image
+    ros_annotated = self.bridge.cv2_to_imgmsg(
+        annotated_image, encoding='bgr8')
+    self.annotated_pub.publish(ros_annotated)
+    
+    # Publish detected class names
+    detected_classes = [
+        self.model.names[int(cls)] 
+        for cls in results[0].boxes.cls
+    ] if results[0].boxes is not None else []
+    
+    if detected_classes:
+        msg_out = String()
+        msg_out.data = ','.join(detected_classes)
+        self.class_pub.publish(msg_out)
+\end{lstlisting}
+
+\textbf{YOLO Explained}: You Only Look Once (YOLO) is a real-time object detection system. It processes images in a single forward pass through a neural network, making it fast enough for robotics applications.
+
+\textbf{Model File}: \texttt{best.pt} is a trained YOLO model. You can train your own model or use pre-trained ones from Ultralytics.
+
+\subsection{Arduino Firmware}
+
+\textbf{Purpose}: Receives motor commands via serial and controls motor driver hardware.
+
+\subsubsection{Motor Driver Class}
+
+\begin{lstlisting}[style=cppstyle, caption=motor.h (simplified)]
+class motor {
+    const byte _leftMDiagPin;   // Enable pin
+    const byte _leftMInputA;    // Direction pin A
+    const byte _leftMInputB;    // Direction pin B
+    const byte _leftMPwm;       // PWM speed control
+    
+    // Same for right motor...
+    
+public:
+    void setMotor(int left_pwm, int right_pwm) const {
+        // Determine direction based on sign
+        MotorSet direction = FORWARD;
+        if (left_pwm < 0) {
+            direction = BACKWARD;
+            left_pwm = -left_pwm;
+        }
+        // Apply direction and PWM
+        setMotor(direction, left_pwm, right_pwm);
+    }
+};
+\end{lstlisting}
+
+\textbf{PWM Explained}: Pulse Width Modulation controls motor speed by rapidly switching power on and off. A higher duty cycle (longer on time) means faster speed.
+
+\subsubsection{Main Loop}
+
+\begin{lstlisting}[style=cppstyle, caption=Arduino main.cpp]
+void loop() {
+    shared_defs::MotorCommandUnion MotorCommand{};
+    byte c;
+    
+    delay(100);  // 10 Hz update rate
+    
+    if (Serial.available() > 0 && !data_ready) {
+        Serial.readBytes(&c, 1);
+        
+        // Wait for sync byte
+        if (c == SYNC_BYTE) {
+            // Read 8 bytes of motor data
+            Serial.readBytes(MotorCommand.raw_data, 
+                           sizeof(MotorCommand.raw_data));
+            data_ready = true;
+        }
+    }
+    
+    if (data_ready) {
+        p_motorController->setMotor(
+            MotorCommand.motor_command.left_motor,
+            MotorCommand.motor_command.right_motor);
+        data_ready = false;
+    }
+}
+\end{lstlisting}
+
+\textbf{Safety Note}: If serial communication stops, the Arduino will continue executing the last command. Consider adding a timeout mechanism for production systems.
+
+\textbf{Performance Note}: The \texttt{delay(100)} blocks the entire Arduino loop. For applications requiring multiple concurrent tasks (e.g., sensor reading, LED indicators), consider using \texttt{millis()} for non-blocking timing. However, for this simple motor control application, the blocking delay is adequate.
+
+%=============================================================================
+\section{Launch Scripts}
+%=============================================================================
+
+\subsection{multi\_node.launch.py}
+
+This launch file starts multiple nodes simultaneously, which is essential for complex robot systems.
+
+\begin{lstlisting}[style=pythonstyle, caption=multi\_node.launch.py]
+def generate_launch_description():
+    # Interbotix arm launch file
+    xsarm_launch = os.path.join(
+        get_package_share_directory('interbotix_xsarm_control'),
+        'launch', 'xsarm_control.launch.py')
+    
+    interbotix = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(xsarm_launch),
+        launch_arguments={'robot_model': 'rx200'}.items())
+    
+    # RealSense camera node
+    realsense = Node(
+        package='realsense2_camera',
+        executable='realsense2_camera_node',
+        name='D415',
+        namespace='robot',
+        parameters=[
+            {'enable_color': True},
+            {'enable_depth': False},
+            {'rgb_camera.profile': '640x480x6'},
+        ])
+    
+    # Drive interface node
+    drive_interface = Node(
+        package='robot_drive_interface',
+        executable='drive_node',
+        name='drive_interface',
+        parameters=[{'serial_port': '/dev/ttyUSB1'}])
+    
+    return LaunchDescription([
+        interbotix,
+        realsense,
+        drive_interface,
+    ])
+\end{lstlisting}
+
+\subsection{Launch File Components}
+
+\subsubsection{IncludeLaunchDescription}
+
+Allows reusing existing launch files. Here we include Interbotix's launch file with custom arguments (\texttt{robot\_model: 'rx200'}).
+
+\subsubsection{Node}
+
+Starts a single ROS2 node with specified parameters. Each node runs in its own process.
+
+\subsubsection{Parameters}
+
+\begin{itemize}
+    \item \textbf{serial\_port}: Can be overridden at launch time
+    \item \textbf{enable\_color}: Configures RealSense camera
+    \item \textbf{namespace}: Prevents topic name collisions when running multiple robots
+\end{itemize}
+
+\subsection{Using Launch Files}
+
+\begin{lstlisting}[style=bashstyle]
+# Launch from command line
+ros2 launch robot_drive_interface multi_node.launch.py
+
+# Override parameters
+ros2 launch robot_drive_interface multi_node.launch.py serial_port:=/dev/ttyUSB0
+
+# Launch with custom arguments
+ros2 launch robot_drive_interface multi_node.launch.py robot_model:=rx150
+\end{lstlisting}
+
+%=============================================================================
+\section{Building and Running the System}
+%=============================================================================
+
+\subsection{Building the ROS2 Workspace}
+
+\subsubsection{Initial Build}
+
+\begin{lstlisting}[style=bashstyle, caption=Build All Packages]
+# Navigate to workspace
+cd ros2ws/
+
+# Install dependencies
+rosdep update
+rosdep install --from-paths src -y --ignore-src
+
+# Build all packages
+colcon build --symlink-install
+
+# Source the workspace
+source install/setup.bash
+\end{lstlisting}
+
+\textbf{Flags Explained}:
+\begin{itemize}
+    \item \texttt{--symlink-install}: Creates symlinks instead of copying files, allowing Python code changes without rebuilding
+    \item \texttt{--from-paths src}: Install dependencies for all packages in src/
+    \item \texttt{-y}: Auto-confirm installations
+    \item \texttt{--ignore-src}: Don't try to install packages you're building
+\end{itemize}
+
+\subsubsection{Incremental Build}
+
+\begin{lstlisting}[style=bashstyle, caption=Build Specific Packages]
+# Build only robot packages (faster during development)
+colcon build --packages-select robot_command_node robot_drive_interface robot_msgs robot_perception
+
+# Build with verbose output for debugging
+colcon build --event-handlers console_direct+
+\end{lstlisting}
+
+\subsection{Running the System Locally}
+
+\subsubsection{Terminal 1: Launch Core Nodes}
+
+\begin{lstlisting}[style=bashstyle]
+cd ros2ws/
+source install/setup.bash
+ros2 launch robot_drive_interface multi_node.launch.py
+\end{lstlisting}
+
+\subsubsection{Terminal 2: Run Command Node}
+
+\begin{lstlisting}[style=bashstyle]
+cd ros2ws/
+source install/setup.bash
+ros2 run robot_command_node command_node
+\end{lstlisting}
+
+\subsubsection{Terminal 3: Run Perception Node}
+
+\begin{lstlisting}[style=bashstyle]
+cd ros2ws/
+source install/setup.bash
+ros2 run robot_perception stream_perception
+\end{lstlisting}
+
+\subsection{Deploying to Raspberry Pi}
+
+The project includes Docker-based deployment for easy remote deployment.
+
+\subsubsection{Build Docker Image}
+
+\begin{lstlisting}[style=bashstyle, caption=Build and Push Docker Image]
+# Build image locally
+docker build -t hadibeydoun8/ncyouthrobotics:latest .
+
+# Push to Docker Hub (requires login)
+docker login
+docker push hadibeydoun8/ncyouthrobotics:latest
+\end{lstlisting}
+
+\subsubsection{Deploy with Script}
+
+\begin{lstlisting}[style=bashstyle, caption=deploy.sh Usage]
+# Edit deploy.sh to set your Raspberry Pi IP
+# PI_HOST=rosii@192.168.12.164
+
+# Run deployment
+./deploy.sh
+\end{lstlisting}
+
+\textbf{What deploy.sh does}:
+\begin{enumerate}
+    \item SSHs into Raspberry Pi
+    \item Pulls latest Docker image
+    \item Stops previous container
+    \item Starts new container with launch file
+\end{enumerate}
+
+\subsubsection{Manual Docker Deployment}
+
+\begin{lstlisting}[style=bashstyle]
+# On Raspberry Pi
+sudo docker run -d \
+  --name ncyr_robotics \
+  --network host \
+  --privileged \
+  -e ROS_DOMAIN_ID=0 \
+  hadibeydoun8/ncyouthrobotics:latest \
+  /bin/bash -c "source /build_space/ros2ws/install/setup.sh && \
+                ros2 launch robot_drive_interface multi_node.launch.py"
+\end{lstlisting}
+
+\textbf{Flags Explained}:
+\begin{itemize}
+    \item \texttt{-d}: Detached mode (runs in background)
+    \item \texttt{--network host}: Use host network (no port mapping needed)
+    \item \texttt{--privileged}: Access to serial devices and hardware
+    \item \texttt{-e ROS\_DOMAIN\_ID=0}: ROS2 domain for multi-machine communication
+\end{itemize}
+
+\subsection{Programming Arduino}
+
+\begin{lstlisting}[style=bashstyle]
+# Navigate to Arduino directory
+cd Arduino/
+
+# Connect Arduino via USB
+# Check connection: ls /dev/ttyUSB* or ls /dev/ttyACM*
+
+# Build and upload
+pio run --target upload
+
+# Monitor serial output (optional)
+pio device monitor
+\end{lstlisting}
+
+%=============================================================================
+\section{Using RQT for Visualization and Debugging}
+%=============================================================================
+
+RQT is a Qt-based framework for GUI development in ROS. It provides powerful tools for debugging and visualization.
+
+\subsection{Launching RQT}
+
+\begin{lstlisting}[style=bashstyle]
+# Launch main RQT interface
+rqt
+
+# Launch specific plugins directly
+rqt_graph      # Node and topic visualization
+rqt_image_view # View camera feeds
+rqt_plot       # Plot numeric topics
+rqt_console    # View log messages
+\end{lstlisting}
+
+\subsection{Useful RQT Plugins}
+
+\subsubsection{rqt\_graph}
+
+Visualizes the ROS2 computation graph (nodes and topics).
+
+\begin{lstlisting}[style=bashstyle]
+rqt_graph
+\end{lstlisting}
+
+\textbf{What to look for}:
+\begin{itemize}
+    \item Verify all expected nodes are running
+    \item Check topic connections between nodes
+    \item Identify unused topics or disconnected nodes
+\end{itemize}
+
+\subsubsection{rqt\_image\_view}
+
+Display camera feeds in real-time.
+
+\begin{lstlisting}[style=bashstyle]
+rqt_image_view
+\end{lstlisting}
+
+\textbf{Usage}:
+\begin{enumerate}
+    \item Select topic from dropdown (e.g., \texttt{/robot/D415/color/image\_raw})
+    \item View live video feed
+    \item Switch between raw and annotated feeds
+\end{enumerate}
+
+\subsubsection{rqt\_plot}
+
+Plot numeric data over time.
+
+\begin{lstlisting}[style=bashstyle]
+# Plot motor commands
+rqt_plot /command_node/left_motor /command_node/right_motor
+\end{lstlisting}
+
+\subsubsection{rqt\_console}
+
+View and filter log messages from all nodes.
+
+\begin{lstlisting}[style=bashstyle]
+rqt_console
+\end{lstlisting}
+
+\textbf{Features}:
+\begin{itemize}
+    \item Filter by severity (DEBUG, INFO, WARN, ERROR, FATAL)
+    \item Filter by node name
+    \item Search log messages
+\end{itemize}
+
+\subsection{Topic Inspection with Command Line}
+
+\begin{lstlisting}[style=bashstyle]
+# List all topics
+ros2 topic list
+
+# Show topic info
+ros2 topic info /command_node
+
+# Echo topic data
+ros2 topic echo /command_node
+
+# Show message rate
+ros2 topic hz /camera/image_raw
+
+# Show bandwidth usage
+ros2 topic bw /camera/image_raw
+\end{lstlisting}
+
+%=============================================================================
+\section{Troubleshooting and Tips}
+%=============================================================================
+
+\subsection{Common Issues}
+
+\subsubsection{Serial Port Permission Denied}
+
+\textbf{Error}: \texttt{Failed to open serial port: /dev/ttyUSB0}
+
+\textbf{Solution}:
+\begin{lstlisting}[style=bashstyle]
+# Add user to dialout group
+sudo usermod -aG dialout $USER
+
+# Log out and back in, then verify
+groups | grep dialout
+\end{lstlisting}
+
+\subsubsection{Controller Not Detected}
+
+\textbf{Error}: \texttt{No controller found}
+
+\textbf{Solutions}:
+\begin{itemize}
+    \item Connect controller via USB or pair via Bluetooth
+    \item Check if controller is recognized: \texttt{ls /dev/input/js*}
+    \item Install SDL2: \texttt{sudo apt install libsdl2-dev}
+\end{itemize}
+
+\subsubsection{Build Errors}
+
+\textbf{Error}: Missing dependencies
+
+\textbf{Solution}:
+\begin{lstlisting}[style=bashstyle]
+# Update rosdep database
+rosdep update
+
+# Install all dependencies
+cd ros2ws/
+rosdep install --from-paths src -y --ignore-src
+\end{lstlisting}
+
+\subsubsection{Camera Not Working}
+
+\textbf{Error}: \texttt{Camera not found}
+
+\textbf{Solutions}:
+\begin{itemize}
+    \item Check camera connection: \texttt{ls /dev/video*}
+    \item Test with: \texttt{v4l2-ctl --list-devices}
+    \item For RealSense: \texttt{rs-enumerate-devices}
+\end{itemize}
+
+\subsection{Development Tips}
+
+\subsubsection{Faster Iteration}
+
+\begin{itemize}
+    \item Use \texttt{--symlink-install} with colcon to avoid rebuilding Python code
+    \item Build only changed packages: \texttt{colcon build --packages-select <pkg>}
+    \item Use \texttt{--event-handlers console\_direct+} to see build errors immediately
+\end{itemize}
+
+\subsubsection{Debugging Nodes}
+
+\begin{lstlisting}[style=bashstyle]
+# Run node with debug output
+ros2 run robot_drive_interface drive_node --ros-args --log-level debug
+
+# Check if node is running
+ros2 node list
+
+# Get info about a node
+ros2 node info /drive_interface
+\end{lstlisting}
+
+\subsubsection{Remote Development}
+
+When working with Raspberry Pi:
+
+\begin{lstlisting}[style=bashstyle]
+# Set ROS_DOMAIN_ID on both machines (must be the same)
+export ROS_DOMAIN_ID=0
+
+# ROS2 will automatically discover nodes on the same network
+# No need to set ROS_IP (ROS2 uses DDS discovery)
+
+# Now you can view topics from Pi on local machine
+ros2 topic list
+\end{lstlisting}
+
+\subsection{Best Practices}
+
+\begin{itemize}
+    \item \textbf{Always source workspace}: \texttt{source install/setup.bash}
+    \item \textbf{Use version control}: Commit working code before making changes
+    \item \textbf{Test incrementally}: Test each component before integrating
+    \item \textbf{Document changes}: Add comments for non-obvious code
+    \item \textbf{Check logs}: Use \texttt{rqt\_console} or \texttt{ros2 topic echo}
+\end{itemize}
+
+%=============================================================================
+\section{Next Steps and Extensions}
+%=============================================================================
+
+\subsection{Project Extensions}
+
+Ideas for extending this project:
+
+\begin{itemize}
+    \item \textbf{Autonomous Navigation}: Integrate ROS2 Nav2 for path planning
+    \item \textbf{SLAM}: Add mapping and localization using laser scanner or depth camera
+    \item \textbf{Voice Control}: Integrate speech recognition for voice commands
+    \item \textbf{Web Interface}: Create web-based control panel using rosbridge
+    \item \textbf{Machine Learning}: Train custom YOLO model for specific objects
+    \item \textbf{Arm Control}: Add gamepad control for robotic arm movements
+    \item \textbf{Multi-Robot}: Coordinate multiple robots using different ROS\_DOMAIN\_IDs
+\end{itemize}
+
+\subsection{Learning Resources}
+
+\begin{itemize}
+    \item \textbf{ROS2 Documentation}: \url{https://docs.ros.org/en/humble/}
+    \item \textbf{ROS2 Tutorials}: \url{https://docs.ros.org/en/humble/Tutorials.html}
+    \item \textbf{Interbotix Documentation}: \url{https://www.trossenrobotics.com/docs/interbotix_xsarms/}
+    \item \textbf{PlatformIO Docs}: \url{https://docs.platformio.org/}
+    \item \textbf{OpenCV Tutorials}: \url{https://docs.opencv.org/4.x/d9/df8/tutorial_root.html}
+    \item \textbf{YOLO Documentation}: \url{https://docs.ultralytics.com/}
+\end{itemize}
+
+\subsection{Community and Support}
+
+\begin{itemize}
+    \item \textbf{ROS Discourse}: \url{https://discourse.ros.org/}
+    \item \textbf{ROS Answers}: \url{https://answers.ros.org/}
+    \item \textbf{GitHub Issues}: Check individual package repositories
+\end{itemize}
+
+%=============================================================================
+\section{Conclusion}
+%=============================================================================
+
+This document has covered the complete setup, architecture, and usage of the ROS2 robotics project. You should now be able to:
+
+\begin{itemize}
+    \item Install ROS2 Humble on Ubuntu and Raspberry Pi
+    \item Understand the project structure and purpose of each component
+    \item Build and run the system locally or deploy to Raspberry Pi
+    \item Use PlatformIO to program the Arduino
+    \item Debug and visualize the system using RQT tools
+    \item Extend the project with your own features
+\end{itemize}
+
+Remember: robotics is an iterative process. Start simple, test frequently, and build complexity gradually. Good luck with your robotics journey!
+
+%=============================================================================
+\appendix
+\section{Reference: Key Commands}
+%=============================================================================
+
+\subsection{ROS2 Commands}
+
+\begin{lstlisting}[style=bashstyle]
+# Build workspace
+colcon build --symlink-install
+
+# Source workspace
+source install/setup.bash
+
+# Run node
+ros2 run <package> <executable>
+
+# Launch file
+ros2 launch <package> <launch_file>
+
+# List topics
+ros2 topic list
+
+# Echo topic
+ros2 topic echo <topic>
+
+# List nodes
+ros2 node list
+
+# Node info
+ros2 node info <node>
+\end{lstlisting}
+
+\subsection{PlatformIO Commands}
+
+\begin{lstlisting}[style=bashstyle]
+# Build firmware
+pio run
+
+# Upload to Arduino
+pio run --target upload
+
+# Serial monitor
+pio device monitor
+
+# Clean build
+pio run --target clean
+\end{lstlisting}
+
+\subsection{Docker Commands}
+
+\begin{lstlisting}[style=bashstyle]
+# Build image
+docker build -t <image_name> .
+
+# Run container
+docker run -d --name <container_name> <image_name>
+
+# Stop container
+docker stop <container_name>
+
+# View logs
+docker logs <container_name>
+
+# Execute command in container
+docker exec -it <container_name> bash
+\end{lstlisting}
+
+\end{document}
